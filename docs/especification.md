@@ -49,14 +49,14 @@ La especificación establece qué debe hacer el sistema y qué restricciones deb
 
 Cada tarea deberá contener los siguientes atributos:
 
-| Atributo | Descripción |
-|---|---|
-| Identificador | Valor único que permite identificar la tarea. |
-| Título | Texto obligatorio que describe la tarea. |
-| Descripción | Texto opcional con información adicional. |
-| Prioridad | Nivel de importancia: baja, media o alta. |
+| Atributo                    | Descripción                                         |
+|-----------------------------|-----------------------------------------------------|
+| Identificador               | Valor único que permite identificar la tarea.       |
+| Título                      | Texto obligatorio que describe la tarea.            |
+| Descripción                 | Texto opcional con información adicional.           |
+| Prioridad                   | Nivel de importancia: baja, media o alta.           |
 | Fecha y hora de vencimiento | Valor opcional que determina cuándo vence la tarea. |
-| Estado | Pendiente o completada. |
+| Estado                      | Pendiente o completada.                             |
 
 ### 4.2. Valores de prioridad
 
@@ -117,6 +117,8 @@ El sistema deberá permitir cambiar el estado de una tarea entre pendiente y com
 
 Una tarea completada no deberá considerarse vencida.
 
+Al reabrir una tarea completada cuyo vencimiento sea anterior o igual al instante actual, se eliminará su fecha y hora de vencimiento. La tarea volverá al estado pendiente y quedará sin vencimiento. Si el vencimiento es posterior al instante actual, se conservará al reabrir la tarea.
+
 ### RF-06 — Eliminar tareas
 
 El sistema deberá permitir eliminar una tarea guardada.
@@ -127,16 +129,16 @@ La tarea eliminada dejará de aparecer en las consultas y listas de tareas.
 
 El sistema deberá ofrecer los siguientes filtros de fecha:
 
-| Filtro | Comportamiento |
-|---|---|
-| Todas | No restringe por fecha de vencimiento. |
-| Vencidas | Incluye tareas pendientes cuyo vencimiento sea anterior al momento actual. |
-| Vencen hoy | Incluye tareas con vencimiento dentro del día calendario actual, independientemente de su estado. |
-| Próximas | Incluye tareas con vencimiento posterior al final del día calendario actual. |
-| Sin vencimiento | Incluye tareas que no tienen fecha y hora de vencimiento. |
-| Fecha específica | Incluye tareas cuyo vencimiento corresponde al día calendario seleccionado. |
+| Filtro           | Comportamiento                                                                                                                                                                   |
+|------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Todas            | No restringe por fecha de vencimiento.                                                                                                                                           |
+| Vencidas         | Incluye tareas pendientes cuyo vencimiento sea anterior o igual al momento actual.                                                                                               |
+| Vencen hoy       | Incluye tareas pendientes cuyo vencimiento se encuentre dentro del día calendario actual y sea estrictamente posterior al instante actual.                                       |
+| Próximas         | Incluye tareas de cualquier estado cuyo vencimiento sea mayor o igual al inicio del día calendario siguiente.                                                                    |
+| Sin vencimiento  | Incluye tareas que no tienen fecha y hora de vencimiento.                                                                                                                        |
+| Fecha específica | Incluye tareas de cualquier estado cuyo vencimiento sea mayor o igual al inicio del día calendario seleccionado y estrictamente anterior al inicio del día calendario siguiente. |
 
-Los filtros temporales utilizarán la fecha y hora local del dispositivo como referencia provisional, pendiente de formalización en el diseño lógico.
+Los filtros temporales utilizarán una referencia temporal consistente para determinar el instante actual, la fecha local y los límites del día calendario. La fuente de tiempo y la zona horaria definitivas se establecerán en el diseño lógico. La implementación deberá aplicar esos criterios de forma consistente en todos los filtros temporales.
 
 ### RF-08 — Filtrar por prioridad
 
@@ -152,6 +154,8 @@ El sistema deberá permitir combinar un filtro de vencimiento con un filtro de p
 
 Una tarea solo aparecerá en los resultados cuando cumpla simultáneamente todas las condiciones seleccionadas.
 
+Los filtros de vencimiento y prioridad pueden aplicarse de forma independiente o combinada. Cuando se aplica únicamente un filtro de prioridad, deben incluirse todas las tareas que cumplan esa prioridad, tengan o no vencimiento. Cuando se combinan filtros, las tareas deben cumplir todas las condiciones seleccionadas.
+
 ### RF-10 — Ordenar tareas
 
 El sistema deberá permitir ordenar las tareas mediante los siguientes criterios:
@@ -165,13 +169,17 @@ El orden predeterminado será por fecha y hora de vencimiento ascendente.
 
 Las tareas sin vencimiento aparecerán siempre al final, tanto en orden ascendente como descendente.
 
+Entre las tareas sin vencimiento, se aplicarán los siguientes criterios de ordenamiento: prioridad descendente (alta, media y baja), título en orden alfabético ascendente según la política de comparación definida en este requisito y, si los títulos son equivalentes, identificador de la tarea en orden ascendente.
+
 Cuando varias tareas tengan el mismo valor de vencimiento, se aplicarán estos criterios secundarios:
 
 1. Prioridad descendente: alta, media y baja.
 2. Título en orden alfabético ascendente, sin distinguir entre mayúsculas y minúsculas.
 3. Identificador de la tarea como último criterio técnico de desempate.
 
-Cuando se ordene por prioridad, las tareas con igual prioridad se ordenarán alfabéticamente por título y, si fuera necesario, por identificador.
+Cuando se ordene por prioridad, las tareas con igual prioridad se ordenarán por título en orden alfabético ascendente, aplicando la política de comparación definida en este requisito. Si los títulos resultan equivalentes según esa política, se utilizará el identificador de la tarea en orden ascendente como criterio final de desempate.
+
+Para las comparaciones alfabéticas, los títulos se normalizarán a Unicode NFC y se compararán sin distinguir entre mayúsculas y minúsculas mediante una transformación independiente de la configuración regional del dispositivo. Se conservarán los acentos y los caracteres especiales: por ejemplo, `ñ` se considerará diferente de `n`. Estas reglas se aplicarán de manera consistente en todos los criterios de ordenamiento que utilicen el título.
 
 ### RF-11 — Persistir los datos localmente
 
@@ -179,15 +187,17 @@ El sistema deberá guardar las tareas en almacenamiento local y conservarlas des
 
 Las operaciones de creación, edición, cambio de estado y eliminación deberán reflejarse en los datos persistidos.
 
+Los cambios realizados al reabrir una tarea, incluida la eliminación de su fecha y hora de vencimiento cuando corresponda, deberán persistirse y mantenerse después de cerrar y volver a iniciar la aplicación.
+
 ### RF-12 — Identificar tareas vencidas
 
 Una tarea se considerará vencida cuando se cumplan todas estas condiciones:
 
 1. Su estado sea pendiente.
 2. Tenga una fecha y hora de vencimiento.
-3. Su vencimiento sea estrictamente anterior al instante actual.
+3. Su vencimiento sea anterior o igual al instante actual.
 
-Una tarea cuyo vencimiento coincida exactamente con el instante actual todavía no se considerará vencida bajo esta regla estricta.
+Una tarea cuyo vencimiento coincida exactamente con el instante actual se considerará vencida.
 
 Las tareas completadas no se considerarán vencidas, independientemente de su fecha y hora de vencimiento.
 
@@ -195,7 +205,7 @@ Las tareas completadas no se considerarán vencidas, independientemente de su fe
 
 ### RN-01 — Normalización del título
 
-El título se normalizará eliminando los espacios en blanco iniciales y finales. La versión normalizada será la que se valide y almacene.
+El título se normalizará eliminando los espacios en blanco iniciales y finales, sin modificar los espacios en blanco internos. La versión normalizada será la que se valide y almacene.
 
 ### RN-02 — Límite del título
 
@@ -225,7 +235,11 @@ Por lo tanto, una tarea pendiente con vencimiento a las `00:00` podrá considera
 
 El vencimiento se determinará comparando la fecha y hora de vencimiento con el instante actual.
 
+Una tarea pendiente con fecha y hora de vencimiento será considerada vencida cuando su vencimiento sea anterior o igual al instante actual.
+
 La comparación deberá utilizar una referencia temporal controlable para que las pruebas automatizadas no dependan del reloj real.
+
+Los filtros temporales y el cálculo del vencimiento deberán utilizar una referencia temporal consistente para determinar el instante actual, la fecha local y los límites del día calendario.
 
 La zona horaria y el mecanismo definitivo para obtener la hora actual se formalizarán en el diseño lógico.
 
@@ -233,7 +247,7 @@ La zona horaria y el mecanismo definitivo para obtener la hora actual se formali
 
 El ordenamiento deberá producir resultados deterministas para un mismo conjunto de tareas, filtros y criterio de ordenamiento.
 
-Si dos tareas coinciden en todos los criterios funcionales de ordenamiento, el identificador resolverá el desempate final.
+Cuando dos o más tareas coincidan en los criterios funcionales de ordenamiento, se aplicarán los criterios secundarios definidos en RF-10. Si las tareas continúan siendo equivalentes según esos criterios, el identificador de la tarea en orden ascendente resolverá el desempate final.
 
 ### RN-08 — Composición de filtros
 
@@ -269,11 +283,11 @@ Los casos de uso y las reglas que dependan del momento actual deberán admitir u
 
 ### RNF-05 — Funcionamiento offline
 
-Las funcionalidades incluidas en el MVP deberán funcionar sin conexión a Internet.
+Las funcionalidades incluidas en el MVP deberán funcionar sin conexión a Internet. Los datos de las tareas deberán almacenarse localmente y mantenerse disponibles después de cerrar y volver a abrir la aplicación.
 
 ### RNF-06 — Mantenibilidad
 
-El código deberá mantener responsabilidades claras, dependencias controladas y una estructura que facilite la evolución del proyecto.
+El código deberá mantener responsabilidades claras, dependencias controladas y una estructura que facilite la evolución del proyecto. La organización del código deberá respetar las responsabilidades definidas para las capas de Presentation, Domain y Data, de acuerdo con la arquitectura lógica establecida.
 
 ### RNF-07 — Integración continua
 
@@ -305,41 +319,41 @@ Las tecnologías específicas de persistencia, inyección de dependencias y aná
 
 ## 9. Criterios de aceptación
 
-| ID | Criterio |
-|---|---|
-| CA-01 | Se puede crear una tarea con un título válido. |
-| CA-02 | Se rechaza un título vacío o compuesto solo por espacios. |
-| CA-03 | Se eliminan los espacios iniciales y finales del título guardado. |
-| CA-04 | Se permite un título de hasta 36 puntos de código Unicode. |
-| CA-05 | Se rechaza un título que supere los 36 puntos de código Unicode. |
-| CA-06 | La prioridad predeterminada es media. |
-| CA-07 | Se puede crear una tarea sin vencimiento. |
-| CA-08 | Si se indica fecha sin hora, el vencimiento se establece a las `00:00`. |
-| CA-09 | Se pueden ingresar y consultar horas en formato de 24 horas. |
-| CA-10 | Se puede editar una tarea y quitar su vencimiento. |
-| CA-11 | Se puede marcar una tarea como completada y volver a dejarla pendiente. |
-| CA-12 | Se puede eliminar una tarea. |
-| CA-13 | Una tarea pendiente cuyo vencimiento sea anterior al instante actual se considera vencida. |
-| CA-14 | Una tarea cuyo vencimiento coincida exactamente con el instante actual no se considera vencida. |
-| CA-15 | Una tarea completada no se considera vencida. |
-| CA-16 | Una tarea sin vencimiento no se considera vencida. |
-| CA-17 | Se pueden filtrar tareas por vencidas, vencen hoy, próximas, sin vencimiento y fecha específica. |
-| CA-18 | Se pueden filtrar tareas por prioridad. |
-| CA-19 | Los filtros de fecha y prioridad se aplican conjuntamente. |
-| CA-20 | Se puede ordenar por vencimiento ascendente y descendente. |
-| CA-21 | Las tareas sin vencimiento aparecen siempre al final al ordenar por fecha. |
-| CA-22 | Se puede ordenar por prioridad ascendente y descendente. |
-| CA-23 | Los empates de vencimiento se resuelven por prioridad descendente, título alfabético e identificador. |
-| CA-24 | El ordenamiento produce resultados deterministas. |
-| CA-25 | Los datos persisten tras cerrar y reiniciar la aplicación. |
-| CA-26 | Las reglas de dominio pueden probarse sin dispositivo ni emulador. |
-| CA-27 | Las pruebas temporales utilizan una referencia de tiempo controlable. |
-| CA-28 | El flujo de GitHub Actions compila el proyecto y ejecuta las pruebas configuradas. |
-| CA-29 | Las instrucciones permiten clonar, compilar y probar el proyecto de forma reproducible. |
-| CA-30 | La aplicación puede utilizarse sin conexión a Internet para las funcionalidades del MVP. |
-| CA-31 | Una tarea con fecha pero sin hora explícita se guarda con hora `00:00`. |
-| CA-32 | Una tarea con hora explícita se considera vencida cuando su vencimiento queda estrictamente atrás respecto del instante actual, siempre que siga pendiente. |
-| CA-33 | Las tareas con igual vencimiento se ordenan primero por prioridad alta, media y baja; después por título sin distinguir mayúsculas de minúsculas. |
+| ID    | Criterio                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|-------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CA-01 | Se puede crear una tarea con un título válido, indicando opcionalmente una descripción, una prioridad y una fecha y hora de vencimiento.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| CA-02 | Al crear o editar una tarea, se rechaza un título vacío o compuesto solo por espacios en blanco.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| CA-03 | Al crear o editar una tarea, se eliminan los espacios en blanco al principio y al final del título antes de guardarlo. Los espacios en blanco internos del título se conservan.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| CA-04 | Al crear o editar una tarea, se acepta un título de hasta 36 puntos de código Unicode.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| CA-05 | Al crear o editar una tarea, se rechaza un título que supere los 36 puntos de código Unicode.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| CA-06 | La prioridad predeterminada es media.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| CA-07 | Se puede crear una tarea sin vencimiento.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| CA-08 | Si se indica fecha sin hora, el vencimiento se establece a las `00:00`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| CA-09 | Se pueden ingresar y consultar horas en formato de 24 horas.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| CA-10 | Se puede editar el título, la descripción, la prioridad y la fecha y hora de vencimiento de una tarea, incluida la posibilidad de quitar un vencimiento existente.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| CA-11 | Se puede marcar una tarea como completada y volver a dejarla pendiente. Al reabrir una tarea completada cuyo vencimiento sea anterior o igual al instante actual, se elimina su fecha y hora de vencimiento. Si el vencimiento es posterior al instante actual, se conserva. En ambos casos, la tarea vuelve al estado pendiente.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| CA-12 | Se puede eliminar una tarea guardada y, una vez eliminada, deja de aparecer en las consultas y listas de tareas.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| CA-13 | Una tarea pendiente con vencimiento anterior o igual al instante actual se considera vencida. Si el vencimiento coincide exactamente con el instante actual, la tarea se considera vencida.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| CA-14 | Una tarea completada no se considera vencida.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| CA-15 | Una tarea sin vencimiento no se considera vencida.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| CA-16 | Se pueden consultar todas las tareas sin filtro de fecha y filtrar por vencidas, vencen hoy, próximas, sin vencimiento o fecha específica. El filtro «Vencidas» incluye únicamente tareas pendientes cuyo vencimiento sea anterior o igual al instante actual; «Vencen hoy» incluye únicamente tareas pendientes cuyo vencimiento sea estrictamente posterior al instante actual y anterior al inicio del día calendario siguiente; «Próximas» incluye tareas de cualquier estado cuyo vencimiento sea mayor o igual al inicio del día calendario siguiente; «Sin vencimiento» incluye tareas que no tienen vencimiento; y «Fecha específica» incluye tareas de cualquier estado cuyo vencimiento sea mayor o igual al inicio del día calendario seleccionado y estrictamente anterior al inicio del día calendario siguiente. |
+| CA-17 | Se pueden filtrar tareas por prioridad. Cuando se aplica únicamente un filtro de prioridad, los resultados incluyen todas las tareas que cumplen la prioridad seleccionada, tengan o no fecha y hora de vencimiento.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| CA-18 | Al combinar un filtro de vencimiento con uno de prioridad, una tarea aparece en los resultados únicamente si cumple simultáneamente ambas condiciones (AND lógico).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| CA-19 | Se puede ordenar por vencimiento ascendente y descendente. El ordenamiento predeterminado es por vencimiento ascendente.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| CA-20 | Las tareas sin vencimiento aparecen siempre al final al ordenar por fecha.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| CA-21 | Se pueden ordenar las tareas por prioridad ascendente y descendente. Cuando dos o más tareas tienen la misma prioridad, se ordenan por título según la política de comparación alfabética definida en la especificación y, si los títulos son equivalentes, por ID ascendente.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| CA-22 | Cuando dos o más tareas tienen el mismo vencimiento, se ordenan por prioridad descendente (alta, media y baja), después por título según la política de comparación alfabética definida en la especificación y, si los títulos son equivalentes, por ID ascendente. Entre las tareas sin vencimiento, se aplican esos mismos criterios de ordenamiento.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| CA-23 | Ante el mismo conjunto de tareas y los mismos filtros y parámetros de ordenamiento, la aplicación produce siempre el mismo orden, independientemente del orden en que las tareas se hayan recibido o almacenado.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| CA-24 | Las tareas se guardan en almacenamiento local y se conservan después de cerrar o reiniciar la aplicación. Las operaciones de creación, edición, cambio de estado y eliminación se reflejan en los datos persistidos. Cuando se reabre una tarea cuyo vencimiento es anterior o igual al instante actual, la eliminación de su fecha y hora de vencimiento también se persiste y se mantiene después de cerrar y volver a iniciar la aplicación.                                                                                                                                                                                                                                                                                                                                                                                |
+| CA-25 | Las reglas de dominio pueden probarse mediante pruebas unitarias sin requerir un dispositivo Android ni un emulador.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| CA-26 | Los casos de uso y las reglas de dominio que dependan del momento actual admiten una referencia temporal controlable. Las pruebas automatizadas pueden utilizarla para verificar el cálculo del vencimiento y los filtros temporales, incluidos los límites del día calendario, de forma reproducible. En particular, se verifica que una tarea pendiente cuyo vencimiento coincide exactamente con el instante actual se considere vencida y aparezca en el filtro «Vencidas», mientras que una tarea completada no se considere vencida. También se verifica que, al reabrir una tarea completada, se elimine el vencimiento si es anterior o igual al instante actual y se conserve si es posterior.                                                                                                                        |
+| CA-27 | Desde el inicio de la implementación funcional, GitHub Actions ejecuta un flujo ante eventos `push` y `pull_request` que compila el proyecto y ejecuta las pruebas automatizadas configuradas.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| CA-28 | El repositorio incluye instrucciones para configurar el entorno, compilar el proyecto y ejecutar las pruebas, con las herramientas y versiones necesarias documentadas.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| CA-29 | La aplicación puede utilizarse sin conexión a Internet para las funcionalidades del MVP.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| CA-30 | Se pueden consultar las tareas guardadas y visualizar su título, descripción, prioridad, fecha y hora de vencimiento (si existe) y estado. La lista respeta los filtros y el ordenamiento activos.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| CA-31 | La estructura del proyecto separa las responsabilidades en las capas Presentation, Domain y Data. Cada capa tiene responsabilidades definidas, las dependencias entre ellas respetan la arquitectura establecida en el diseño lógico y la organización del código permite identificar dónde implementar cambios según la responsabilidad afectada.                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| CA-32 | La capa Domain no depende de APIs de Android, componentes de Presentation ni implementaciones concretas de persistencia.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| CA-33 | El proyecto configura las herramientas de análisis estático y las verificaciones adicionales de calidad, junto con sus umbrales correspondientes, según lo definido en docs/implementation_plan.md. El flujo de integración continua ejecuta esas verificaciones.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ## 10. Estrategia de validación
 
@@ -347,7 +361,7 @@ La validación del producto deberá incluir:
 
 - Pruebas unitarias para la normalización y validación de títulos.
 - Pruebas unitarias para prioridades, estados y cálculo del vencimiento.
-- Pruebas de límites temporales, incluyendo igualdad exacta con el instante actual.
+- Pruebas de límites temporales que verifiquen vencimientos anteriores, iguales y posteriores al instante actual, así como el comportamiento de tareas completadas y sin vencimiento.
 - Pruebas de filtros individuales y combinados.
 - Pruebas de ordenamiento, empates y tareas sin vencimiento.
 - Pruebas de persistencia y recuperación de datos.
@@ -363,15 +377,13 @@ Las decisiones técnicas significativas deberán documentarse indicando el conte
 
 ## 12. Decisiones pendientes
 
-Las siguientes cuestiones no alteran los requisitos funcionales acordados, pero deberán definirse antes o durante el diseño técnico correspondiente:
-
+Las siguientes decisiones pendientes deberán definirse en la etapa correspondiente, antes de implementar los componentes que dependan de ellas. Algunas precisan aspectos técnicos de la solución y otras determinan detalles necesarios para aplicar de forma consistente los requisitos funcionales ya establecidos.
 1. Versión mínima de Android.
 2. Tecnología de persistencia local.
 3. Biblioteca de inyección de dependencias, si se utiliza.
 4. Modularización Gradle y límites entre módulos.
 5. Herramientas de análisis estático y umbrales de calidad.
 6. Política definitiva de zona horaria y obtención del instante actual.
-7. Convenciones de comparación alfabética para títulos, incluyendo acentos y reglas regionales.
 
 ## 13. Próximos entregables
 
