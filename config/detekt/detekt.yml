@@ -1,0 +1,19 @@
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+complexity:
+  active: true
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 20
+
+naming:
+  active: true
+  MatchingDeclarationName:
+    active: true
+
+style:
+  active: true
+  MagicNumber:
+    active: false
