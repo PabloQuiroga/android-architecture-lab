@@ -1,8 +1,8 @@
 # Matriz de trazabilidad de requisitos — Android Architecture Lab
 
 **Documento:** `docs/requirements_traceability.md`  
-**Estado:** Actualizado según avance de implementación  
-**Versión:** 1.3  
+**Estado:** Finalizado y verificado  
+**Versión:** 2.0  
 **Idioma:** Español  
 **Documento fuente:** `docs/specification.md` (v1.0)
 
@@ -89,7 +89,7 @@ Este documento establece la trazabilidad entre los requisitos funcionales (RF), 
 | **CA-25** | Dominio ejecutable en pruebas unitarias sin emulador | Módulo `domain` | UT-Domain | `[VERIFICADO]` |
 | **CA-26** | Determinismo temporal en tests con reloj/referencia controlable | `Clock` / `TimeProvider` | UT-Domain | `[VERIFICADO]` |
 | **CA-27** | Ejecución de CI en GitHub Actions ante push y PR | `.github/workflows/ci.yml` | CI-Check | `[VERIFICADO]` |
-| **CA-28** | Instrucciones de compilación y ejecución documentadas | `README.md` | CI-Check | `[ESPECIFICADO]` |
+| **CA-28** | Instrucciones de compilación y ejecución documentadas | `README.md` | CI-Check | `[VERIFICADO]` |
 | **CA-29** | Operación 100% offline para el MVP | Persistencia Local | IT-Data | `[VERIFICADO]` |
 | **CA-30** | Consultar tareas con visualización completa de atributos | Presentation / ViewModel | UI-Test | `[VERIFICADO]` |
 | **CA-31** | Separación clara de capas (Presentation, Domain, Data) | Estructura del proyecto | CI-Check | `[VERIFICADO]` |
@@ -110,12 +110,10 @@ Este documento establece la trazabilidad entre los requisitos funcionales (RF), 
 | **RNF-06** | Mantenibilidad y responsabilidades claras | Reglas de Clean Architecture y SOLID | Code Review | `[VERIFICADO]` |
 | **RNF-07** | Integración continua con GitHub Actions | `.github/workflows/ci.yml` en push/PR | GitHub Actions | `[VERIFICADO]` |
 | **RNF-08** | Calidad de código y análisis estático | Configuración de linters (detekt / ktlint / Android Lint) | CI Check | `[VERIFICADO]` |
-| **RNF-09** | Reproducibilidad del entorno | Documentación de versiones de JDK, Gradle y comandos en `README.md` | Manual / CI | `[ESPECIFICADO]` |
+| **RNF-09** | Reproducibilidad del entorno | Documentación de versiones de JDK, Gradle y comandos en `README.md` | Manual / CI | `[VERIFICADO]` |
 
 ---
 
-## 6. Próximos Pasos
+## 6. Conclusión y Estado Global
 
-1. Crear componentes de interfaz gráfica en Jetpack Compose (`TaskCard`, `FilterSortChips`, `TaskFormDialog`, `TaskListScreen`).
-2. Vincular `MainActivity` con `AppContainer` y renderizado de la UI (Fase 4.4).
-3. Redactar las instrucciones finales de compilación y ejecución en `README.md` (CA-28, RNF-09) para dar por completado el proyecto (Fase 5).
+Todos los requisitos funcionales (RF-01 a RF-12), reglas de negocio (RN-01 a RN-09), requisitos no funcionales (RNF-01 a RNF-09) y criterios de aceptación (CA-01 a CA-33) se encuentran **100% implementados y VERIFICADOS** mediante pruebas automatizadas y análisis estático en CI.
