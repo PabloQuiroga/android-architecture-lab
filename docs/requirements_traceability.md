@@ -2,7 +2,7 @@
 
 **Documento:** `docs/requirements_traceability.md`  
 **Estado:** Actualizado según avance de implementación  
-**Versión:** 1.1  
+**Versión:** 1.2  
 **Idioma:** Español  
 **Documento fuente:** `docs/specification.md` (v1.0)
 
@@ -49,7 +49,7 @@ Este documento establece la trazabilidad entre los requisitos funcionales (RF), 
 | **RF-08** | Filtrar tareas por prioridad (Baja, Media, Alta) | `GetTasksUseCase`, `TaskFilter.Priority` | UT-Domain | `[VERIFICADO]` |
 | **RF-09 / RN-08** | Combinar filtros de vencimiento y prioridad (AND lógico) | `GetTasksUseCase` | UT-Domain | `[VERIFICADO]` |
 | **RF-10 / RN-07** | Ordenar tareas con desempates deterministas (vencimiento, prioridad, título NFC case-insensitive, ID) | `GetTasksUseCase`, `TaskSorter` | UT-Domain | `[VERIFICADO]` |
-| **RF-11** | Persistir datos localmente entre reinicios de la app | `TaskRepository`, `TaskLocalDataSource` | IT-Data | `[EN_PROCESO]` |
+| **RF-11** | Persistir datos localmente entre reinicios de la app | `TaskRepository`, `TaskLocalDataSource` | IT-Data | `[VERIFICADO]` |
 | **RF-12 / RN-06** | Identificar tareas vencidas (pendiente, con vencimiento, vencimiento <= ahora) | `Task.isOverdue()`, `Clock` | UT-Domain (Clock controlado) | `[VERIFICADO]` |
 | **RN-03** | Prioridad predeterminada `MEDIUM` | `Task` | UT-Domain | `[VERIFICADO]` |
 | **RN-04** | Fecha y hora de vencimiento opcionales | `Task` | UT-Domain | `[VERIFICADO]` |
@@ -85,12 +85,12 @@ Este documento establece la trazabilidad entre los requisitos funcionales (RF), 
 | **CA-21** | Ordenamiento por prioridad con desempates por título NFC e ID | `TaskSorter` | UT-Domain | `[VERIFICADO]` |
 | **CA-22** | Ordenamiento por vencimiento con desempate por prioridad, título NFC e ID | `TaskSorter` | UT-Domain | `[VERIFICADO]` |
 | **CA-23** | Determinismo del orden independiente del orden de almacenamiento | `TaskSorter` | UT-Domain | `[VERIFICADO]` |
-| **CA-24** | Persistencia local de operaciones y cambios al reabrir | `TaskRepository`, `LocalDataSource` | IT-Data | `[EN_PROCESO]` |
+| **CA-24** | Persistencia local de operaciones y cambios al reabrir | `TaskRepository`, `LocalDataSource` | IT-Data | `[VERIFICADO]` |
 | **CA-25** | Dominio ejecutable en pruebas unitarias sin emulador | Módulo `domain` | UT-Domain | `[VERIFICADO]` |
 | **CA-26** | Determinismo temporal en tests con reloj/referencia controlable | `Clock` / `TimeProvider` | UT-Domain | `[VERIFICADO]` |
 | **CA-27** | Ejecución de CI en GitHub Actions ante push y PR | `.github/workflows/ci.yml` | CI-Check | `[VERIFICADO]` |
 | **CA-28** | Instrucciones de compilación y ejecución documentadas | `README.md` | CI-Check | `[ESPECIFICADO]` |
-| **CA-29** | Operación 100% offline para el MVP | Persistencia Local | IT-Data | `[EN_PROCESO]` |
+| **CA-29** | Operación 100% offline para el MVP | Persistencia Local | IT-Data | `[VERIFICADO]` |
 | **CA-30** | Consultar tareas con visualización completa de atributos | Presentation / ViewModel | UI-Test | `[ESPECIFICADO]` |
 | **CA-31** | Separación clara de capas (Presentation, Domain, Data) | Estructura del proyecto | CI-Check | `[VERIFICADO]` |
 | **CA-32** | Ausencia de dependencias de Android en la capa Domain | Módulo/Capa `domain` | CI-Check | `[VERIFICADO]` |
@@ -106,7 +106,7 @@ Este documento establece la trazabilidad entre los requisitos funcionales (RF), 
 | **RNF-02** | Independencia del dominio respecto a Android UI y persistencia | Restricción de dependencias en build Gradle de `domain` | Gradle Build | `[VERIFICADO]` |
 | **RNF-03** | Testabilidad unitaria en JVM sin Android | Casos de uso y dominio puros sin framework | JUnit 5 / Kotest | `[VERIFICADO]` |
 | **RNF-04** | Determinismo temporal | Abstracción de tiempo (`TimeProvider` / `Clock`) | UT-Domain | `[VERIFICADO]` |
-| **RNF-05** | Funcionamiento offline | Almacenamiento local SQLite / Room | IT-Data | `[EN_PROCESO]` |
+| **RNF-05** | Funcionamiento offline | Almacenamiento local SQLite / Room | IT-Data | `[VERIFICADO]` |
 | **RNF-06** | Mantenibilidad y responsabilidades claras | Reglas de Clean Architecture y SOLID | Code Review | `[VERIFICADO]` |
 | **RNF-07** | Integración continua con GitHub Actions | `.github/workflows/ci.yml` en push/PR | GitHub Actions | `[VERIFICADO]` |
 | **RNF-08** | Calidad de código y análisis estático | Configuración de linters (detekt / ktlint / Android Lint) | CI Check | `[VERIFICADO]` |
@@ -116,6 +116,6 @@ Este documento establece la trazabilidad entre los requisitos funcionales (RF), 
 
 ## 6. Próximos Pasos
 
-1. Completar la implementación de `TaskDatabase`, `TaskLocalDataSource` y `TaskRepositoryImpl` (Fase 3.2 y 3.3).
-2. Actualizar la matriz a `[VERIFICADO]` para los criterios de persistencia local (RF-11, CA-24, CA-29, RNF-05).
-3. Avanzar a la capa de Presentación con Jetpack Compose y ViewModels (Fase 4).
+1. Avanzar a la Capa de Presentación con ViewModels, Jetpack Compose UI y `AppContainer` (Fase 4).
+2. Completar las verificaciones de interfaz gráfica (CA-09, CA-30).
+3. Redactar las instrucciones finales de compilación y ejecución en `README.md` (CA-28, RNF-09).
