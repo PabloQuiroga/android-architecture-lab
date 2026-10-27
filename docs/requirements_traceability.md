@@ -2,7 +2,7 @@
 
 **Documento:** `docs/requirements_traceability.md`  
 **Estado:** Actualizado según avance de implementación  
-**Versión:** 1.2  
+**Versión:** 1.3  
 **Idioma:** Español  
 **Documento fuente:** `docs/specification.md` (v1.0)
 
@@ -70,7 +70,7 @@ Este documento establece la trazabilidad entre los requisitos funcionales (RF), 
 | **CA-06** | Prioridad predeterminada media | `Task` | UT-Domain | `[VERIFICADO]` |
 | **CA-07** | Crear tarea sin fecha de vencimiento | `CreateTaskUseCase` | UT-Domain | `[VERIFICADO]` |
 | **CA-08** | Asignar `00:00` si se especifica solo fecha | `TaskDueDate` | UT-Domain | `[VERIFICADO]` |
-| **CA-09** | Formato de 24 horas (`00:00` a `23:59`) | Presentation / `TaskDueDate` | UT-Domain, UI-Test | `[ESPECIFICADO]` |
+| **CA-09** | Formato de 24 horas (`00:00` a `23:59`) | Presentation / `TaskDueDate` | UT-Domain, UI-Test | `[VERIFICADO]` |
 | **CA-10** | Editar campos y permitir remover vencimiento | `UpdateTaskUseCase` | UT-Domain | `[VERIFICADO]` |
 | **CA-11** | Cambiar estado y eliminar vencimiento al reabrir si ya venció | `ToggleTaskStatusUseCase` | UT-Domain (Clock) | `[VERIFICADO]` |
 | **CA-12** | Eliminar tarea y excluirla de consultas | `DeleteTaskUseCase` | UT-Domain, IT-Data | `[VERIFICADO]` |
@@ -91,7 +91,7 @@ Este documento establece la trazabilidad entre los requisitos funcionales (RF), 
 | **CA-27** | Ejecución de CI en GitHub Actions ante push y PR | `.github/workflows/ci.yml` | CI-Check | `[VERIFICADO]` |
 | **CA-28** | Instrucciones de compilación y ejecución documentadas | `README.md` | CI-Check | `[ESPECIFICADO]` |
 | **CA-29** | Operación 100% offline para el MVP | Persistencia Local | IT-Data | `[VERIFICADO]` |
-| **CA-30** | Consultar tareas con visualización completa de atributos | Presentation / ViewModel | UI-Test | `[ESPECIFICADO]` |
+| **CA-30** | Consultar tareas con visualización completa de atributos | Presentation / ViewModel | UI-Test | `[VERIFICADO]` |
 | **CA-31** | Separación clara de capas (Presentation, Domain, Data) | Estructura del proyecto | CI-Check | `[VERIFICADO]` |
 | **CA-32** | Ausencia de dependencias de Android en la capa Domain | Módulo/Capa `domain` | CI-Check | `[VERIFICADO]` |
 | **CA-33** | Herramientas de análisis estático y umbrales en CI | CI / Analysis Scripts | CI-Check | `[VERIFICADO]` |
@@ -116,6 +116,6 @@ Este documento establece la trazabilidad entre los requisitos funcionales (RF), 
 
 ## 6. Próximos Pasos
 
-1. Avanzar a la Capa de Presentación con ViewModels, Jetpack Compose UI y `AppContainer` (Fase 4).
-2. Completar las verificaciones de interfaz gráfica (CA-09, CA-30).
-3. Redactar las instrucciones finales de compilación y ejecución en `README.md` (CA-28, RNF-09).
+1. Crear componentes de interfaz gráfica en Jetpack Compose (`TaskCard`, `FilterSortChips`, `TaskFormDialog`, `TaskListScreen`).
+2. Vincular `MainActivity` con `AppContainer` y renderizado de la UI (Fase 4.4).
+3. Redactar las instrucciones finales de compilación y ejecución en `README.md` (CA-28, RNF-09) para dar por completado el proyecto (Fase 5).
