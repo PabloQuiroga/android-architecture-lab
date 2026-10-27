@@ -49,6 +49,14 @@ De acuerdo con la Sección 12 de `docs/specification.md`, se formalizan las sigu
   - Las operaciones que requieren fecha local (ej. determinar si una tarea "Vence hoy") utilizan la zona horaria del dispositivo vía `TimeProvider.timeZone()` (por defecto `ZoneId.systemDefault()`).
   - Para pruebas automatizadas deterministas (CA-26), se inyecta un `TimeProvider` sustentado en un `Clock` fijo (`Clock.fixed(...)`).
 
+### 2.7. Metodología de Desarrollo Dirigida por Pruebas (TDD)
+- **Decisión:** Implementar el ciclo **TDD (Red ➔ Green ➔ Refactor)** como flujo de trabajo obligatorio para las capas de componentes lógicos y ViewModels.
+- **Flujo de Trabajo:**
+  1. **Red (Rojo):** Redactar primero la suite de pruebas unitarias (`*Test.kt`) especificando los estados esperados ante cada evento. El test fallará o no compilará antes de implementar la clase.
+  2. **Green (Verde):** Implementar el componente o ViewModel con el código mínimo necesario para que todas las pruebas pasen.
+  3. **Refactor (Refactorización):** Limpiar el código, aplicar linters (`ktlintFormat`, `detekt`) y verificar que todos los tests continúen en verde.
+
+
 ---
 
 ## 3. Plan de Implementación Incremental por Fases
